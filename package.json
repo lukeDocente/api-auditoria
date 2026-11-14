@@ -4,6 +4,9 @@
   "description": "Servicio de Ingestión y Verificación Criptográfica de Evidencia Fotográfica Geolocalizada",
   "main": "src/server.js",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "node src/server.js",
     "test": "node --test test/**/*.test.js"
@@ -19,4 +22,3 @@
   "author": "Creapx",
   "license": "UNLICENSED"
 }
-
