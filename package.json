@@ -1,0 +1,22 @@
+{
+  "name": "auditoria-backend",
+  "version": "1.0.0",
+  "description": "Servicio de Ingestión y Verificación Criptográfica de Evidencia Fotográfica Geolocalizada",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/**/*.test.js"
+  },
+  "keywords": [
+    "audit",
+    "evidence",
+    "ecdsa",
+    "sha256",
+    "geolocated-photos",
+    "supervisor-verification"
+  ],
+  "author": "Creapx",
+  "license": "UNLICENSED"
+}
+
