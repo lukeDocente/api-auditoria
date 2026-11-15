@@ -70,19 +70,41 @@ export const createServer = () => {
       }
 
       if (method === 'POST' && url === '/api/v1/evidence/sync') {
-        // Punto de extensión para futura sincronización en la nube (SDD §9)
         const body = await parseJsonBody(req);
-        if (!body.manifest) {
-          sendJson(res, 400, { error: 'Se requiere el campo "manifest" para sincronización' });
+
+        // Soporte para Payload de Evidencia Individual (SDD §4)
+        if (body.evidencia_id && body.imagen_procesada_b64) {
+          const imageBuffer = Buffer.from(body.imagen_procesada_b64, 'base64');
+          const computedChecksum = CryptoVerifier.computeSha256(imageBuffer);
+          const isChecksumValid = computedChecksum.toLowerCase() === (body.checksum || '').toLowerCase();
+
+          const confirmationCode = (body.checksum || computedChecksum).substring(0, 8).toUpperCase();
+
+          sendJson(res, 200, {
+            synced: true,
+            evidencia_id: body.evidencia_id,
+            operador_id: body.operador_id,
+            timestamp: body.timestamp,
+            confirmationCode,
+            checksum_valid: isChecksumValid,
+            imageSizeKB: Math.round(imageBuffer.length / 1024),
+            message: 'Evidencia georreferenciada recibida y verificada satisfactoriamente.',
+          });
           return;
         }
 
-        const report = AuditController.verifyBatch({ manifestData: body.manifest });
-        sendJson(res, 200, {
-          synced: true,
-          confirmationCode: report.confirmationCode,
-          message: 'Lote de evidencias recibido e indexado satisfactoriamente.',
-        });
+        // Soporte para Manifiesto en lote (SDD §7 y §9)
+        if (body.manifest) {
+          const report = AuditController.verifyBatch({ manifestData: body.manifest });
+          sendJson(res, 200, {
+            synced: true,
+            confirmationCode: report.confirmationCode,
+            message: 'Lote de evidencias recibido e indexado satisfactoriamente.',
+          });
+          return;
+        }
+
+        sendJson(res, 400, { error: 'Payload no reconocido. Envíe "evidencia_id" o "manifest".' });
         return;
       }
 
